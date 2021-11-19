@@ -1,5 +1,7 @@
 name: "Node VPS Deployment"
 description: "Deploy a Node application to a VPS with SSH and PM2 installed and running"
+icon: "box"
+color: "green"
 
 inputs:
   remote-path:
