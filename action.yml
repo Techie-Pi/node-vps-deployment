@@ -1,0 +1,57 @@
+name: "Node VPS Deployment"
+description: "Deploy a Node application to a VPS with SSH and PM2 installed and running"
+
+inputs:
+  remote-path:
+    description: "Remote path where the files are going to be copied"
+    required: true
+  host:
+    description: "Remote host"
+    required: true
+  username:
+    description: "Username to login"
+    required: true
+  port:
+    description: "SSH port"
+    required: true
+    default: "22"
+  password:
+    description: "SSH password"
+    required: true
+  pm2-id:
+    description: "PM2 ID or Name of the process"
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/checkout@v1
+    
+    - name: Copy repository contents
+      uses: appleboy/scp-action@f57f59fba9f7f05a7857eeb06d556738cc696279
+      env:
+        HOST: ${{ inputs.host }}
+        USERNAME: ${{ inputs.username }}
+        PORT: ${{ inputs.port }}
+        PASSWORD: ${{ inputs.password }}
+      with:
+        source: "."
+        target: ${{ inputs.remote-path }}
+        
+    - name: Run npm clean-install
+      uses: appleboy/ssh-action@1a8b3784eaa665f677fa114edd5683bb6a6bfaa8
+      with:
+        HOST: ${{ inputs.host }}
+        USERNAME: ${{ inputs.username }}
+        PORT: ${{ inputs.port }}
+        PASSWORD: ${{ inputs.password }}
+        script: cd ${{ inputs.remote-path }} && npm ci
+        
+    - name: Restart remote application
+      uses: appleboy/ssh-action@1a8b3784eaa665f677fa114edd5683bb6a6bfaa8
+      with:
+        HOST: ${{ inputs.host }}
+        USERNAME: ${{ inputs.username }}
+        PORT: ${{ inputs.port }}
+        PASSWORD: ${{ inputs.password }}
+        script: pm2 restart ${{ inputs.pm2-id }}
