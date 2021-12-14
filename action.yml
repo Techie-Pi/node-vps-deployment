@@ -27,8 +27,9 @@ inputs:
     default: true
   command-to-run:
     description: "Command to run when automatic-pre-deploy is set to false"
-    required: false
-  pm2-id:
+    required: true
+    default: ""
+pm2-id:
     description: "PM2 ID or Name of the process"
     required: true
 
