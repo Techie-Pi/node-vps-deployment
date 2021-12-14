@@ -21,6 +21,13 @@ inputs:
   password:
     description: "SSH password"
     required: true
+  automatic-pre-deploy:
+    description: "Deploy automatically"
+    required: true
+    default: true
+  command-to-run:
+    description: "Command to run when automatic-pre-deploy is set to false"
+    required: false
   pm2-id:
     description: "PM2 ID or Name of the process"
     required: true
@@ -42,6 +49,7 @@ runs:
         target: ${{ inputs.remote-path }}
         
     - name: Run npm clean-install
+      if: ${{ inputs.automatic-pre-deploy == true }}
       uses: appleboy/ssh-action@1a8b3784eaa665f677fa114edd5683bb6a6bfaa8
       with:
         HOST: ${{ inputs.host }}
@@ -49,6 +57,16 @@ runs:
         PORT: ${{ inputs.port }}
         PASSWORD: ${{ inputs.password }}
         script: cd ${{ inputs.remote-path }} && npm ci
+        
+    - name: Run manual pre deployment
+      if: ${{ inputs.automatic-pre-deploy == false }}
+      uses: appleboy/ssh-action@1a8b3784eaa665f677fa114edd5683bb6a6bfaa8
+      with:
+        HOST: ${{ inputs.host }}
+        USERNAME: ${{ inputs.username }}
+        PORT: ${{ inputs.port }}
+        PASSWORD: ${{ inputs.password }}
+        script: ${{ inputs.command-to-run }}
         
     - name: Restart remote application
       uses: appleboy/ssh-action@1a8b3784eaa665f677fa114edd5683bb6a6bfaa8
